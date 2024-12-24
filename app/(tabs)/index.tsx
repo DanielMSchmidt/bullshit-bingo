@@ -1,74 +1,176 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import * as React from "react";
+import { View, StyleSheet, TouchableHighlight, TextInput, Text } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+type State = {
+    rows: Row[];
+};
+
+type Row = {
+    cells: Cell[];
+};
+
+type Cell = {
+    caption: string;
+    checked: boolean;
+};
+
+function newState(size = 3): State {
+    const s: State = { rows: [] };
+    for (let i = 0; i < size; i++) {
+        const row: Row = { cells: [] };
+        for (let j = 0; j < size; j++) {
+            const cell: Cell = {
+                caption: "hi",
+                checked: false,
+            };
+            row.cells.push(cell);
+        }
+        s.rows.push(row);
+    }
+    return s;
+}
+
+function PlayCellRenderer({
+    cell,
+    setCellState,
+}: {
+    cell: Cell;
+    setCellState: (cb: (s: Cell) => Cell) => void;
+}) {
+    const currentStyle = {
+        backgroundColor: cell.checked ? "green" : "white",
+    };
+
+    return (
+        <TouchableHighlight
+            onPress={() => {
+                console.log("onPress");
+                setCellState((c) => ({ ...c, checked: !c.checked }));
+            }}
+        >
+            <View
+                style={{
+                    ...currentStyle,
+                    flex: 1,
+                    alignItems: "center",
+                    justifyContent: "center",
+                }}
+            >
+                <Text style={{ fontSize: 20 }}>{cell.caption}</Text>
+            </View>
+        </TouchableHighlight>
+    );
+}
+
+function EditCellRenderer({
+    cell,
+    setCellState,
+}: {
+    cell: Cell;
+    setCellState: (cb: (s: Cell) => Cell) => void;
+}) {
+    const [localContent, setLocalContent] = React.useState(cell.caption);
+
+    const setCellContent = (text: string) => {
+        setCellState((state: Cell) => {
+            return { ...state, caption: text };
+        });
+    };
+
+    return (
+        <View
+            style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+            }}
+        >
+            <TextInput
+                value={localContent}
+                onChangeText={setLocalContent}
+                onBlur={() => setCellContent(localContent)}
+                style={{ fontSize: 20 }}
+            />
+        </View>
+    );
+}
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+    const [mode, setMode] = React.useState<"edit" | "play">("edit");
+    const [gameState, setGameState] = React.useState<State>(newState());
+
+    const innerContent =
+        mode === "play" ? (
+            <GridView state={gameState} setState={setGameState} RenderCell={PlayCellRenderer} />
+        ) : (
+            <GridView state={gameState} setState={setGameState} RenderCell={EditCellRenderer} />
+        );
+
+    return (
+        <View style={{ flex: 1 }}>
+            <View style={{ flex: 1 }}>{innerContent}</View>
+            <View style={{ height: 50 }}>
+                <TouchableHighlight
+                    onPress={() => setMode((mode) => (mode === "edit" ? "play" : "edit"))}
+                >
+                    <Text style={{ fontSize: 24, alignSelf: "center" }}>
+                        {mode === "edit" ? "Bearbeiten" : "Spielen"}
+                    </Text>
+                </TouchableHighlight>
+            </View>
+        </View>
+    );
+}
+
+function GridView({
+    state,
+    setState,
+    RenderCell,
+}: {
+    state: State;
+    setState: (cb: (s: State) => State) => void;
+    RenderCell: any;
+}) {
+    return (
+        <View style={{ flexDirection: "row", width: "100%", height: "100%", flex: 1 }}>
+            {state.rows.map((row, rowIndex) => (
+                <View key={rowIndex} style={{ flexDirection: "column", flex: 1 }}>
+                    {row.cells.map((cell, cellIndex) => (
+                        <View key={cellIndex} style={{ flexDirection: "row", flex: 1 }}>
+                            <RenderCell
+                                cell={cell}
+                                setCellState={(cb: (s: Cell) => Cell) => {
+                                    setState((state) => {
+                                        const current = state.rows[rowIndex].cells[cellIndex];
+                                        const newCell = cb(current);
+                                        state.rows[rowIndex].cells[cellIndex] = newCell;
+                                        return { ...state };
+                                    });
+                                }}
+                            />
+                        </View>
+                    ))}
+                </View>
+            ))}
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
+    titleContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+    },
+    stepContainer: {
+        gap: 8,
+        marginBottom: 8,
+    },
+    reactLogo: {
+        height: 178,
+        width: 290,
+        bottom: 0,
+        left: 0,
+        position: "absolute",
+    },
 });
