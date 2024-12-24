@@ -14,7 +14,7 @@ type Cell = {
     checked: boolean;
 };
 
-function newState(size = 3): State {
+function newState(size = 4): State {
     const s: State = { rows: [] };
     for (let i = 0; i < size; i++) {
         const row: Row = { cells: [] };
