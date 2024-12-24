@@ -44,19 +44,35 @@ function PlayCellRenderer({
     return (
         <TouchableHighlight
             onPress={() => {
-                console.log("onPress");
                 setCellState((c) => ({ ...c, checked: !c.checked }));
+            }}
+            style={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                borderColor: "black",
+                borderStyle: "solid",
+                borderWidth: 1,
             }}
         >
             <View
                 style={{
                     ...currentStyle,
                     flex: 1,
+                    height: "100%",
+                    width: "100%",
                     alignItems: "center",
                     justifyContent: "center",
                 }}
             >
-                <Text style={{ fontSize: 20 }}>{cell.caption}</Text>
+                <Text
+                    style={{
+                        fontSize: 20,
+                        textAlign: "center",
+                    }}
+                >
+                    {cell.caption}
+                </Text>
             </View>
         </TouchableHighlight>
     );
@@ -83,13 +99,22 @@ function EditCellRenderer({
                 flex: 1,
                 alignItems: "center",
                 justifyContent: "center",
+                borderColor: "black",
+                borderStyle: "solid",
+                borderWidth: 1,
             }}
         >
             <TextInput
                 value={localContent}
                 onChangeText={setLocalContent}
                 onBlur={() => setCellContent(localContent)}
-                style={{ fontSize: 20 }}
+                style={{
+                    fontSize: 20,
+                    height: "100%",
+                    width: "100%",
+                    backgroundColor: "white",
+                    textAlign: "center",
+                }}
             />
         </View>
     );
@@ -114,7 +139,7 @@ export default function HomeScreen() {
                     onPress={() => setMode((mode) => (mode === "edit" ? "play" : "edit"))}
                 >
                     <Text style={{ fontSize: 24, alignSelf: "center" }}>
-                        {mode === "edit" ? "Bearbeiten" : "Spielen"}
+                        {mode === "edit" ? "Spielen" : "Bearbeiten"}
                     </Text>
                 </TouchableHighlight>
             </View>
