@@ -20,7 +20,7 @@ function newState(size = 3): State {
         const row: Row = { cells: [] };
         for (let j = 0; j < size; j++) {
             const cell: Cell = {
-                caption: "hi",
+                caption: "...",
                 checked: false,
             };
             row.cells.push(cell);
@@ -137,8 +137,18 @@ export default function HomeScreen() {
             <View style={{ height: 50 }}>
                 <TouchableHighlight
                     onPress={() => setMode((mode) => (mode === "edit" ? "play" : "edit"))}
+                    style={{
+                        marginTop: 5,
+                    }}
                 >
-                    <Text style={{ fontSize: 24, alignSelf: "center" }}>
+                    <Text
+                        style={{
+                            fontSize: 24,
+                            alignSelf: "center",
+                            justifyContent: "center",
+                            marginTop: 5,
+                        }}
+                    >
                         {mode === "edit" ? "Spielen" : "Bearbeiten"}
                     </Text>
                 </TouchableHighlight>
